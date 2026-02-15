@@ -1,37 +1,48 @@
+use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
 use std::env;
-
-use serenity::async_trait;
-use serenity::model::channel::Message;
-use serenity::model::gateway::Ready;
-use serenity::prelude::*;
 
 struct Handler;
 
-#[async_trait]
-impl EventHandler for Handler {
-    // Set a handler for the `message` event. This is called whenever a new message is received.
-    //
-    // Event handlers are dispatched through a threadpool, and so multiple events can be
-    // dispatched simultaneously.
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "!ping" {
-            // Sending a message can fail, due to a network error, an authentication error, or lack
-            // of permissions to post in the channel, so log to stdout when some error happens,
-            // with a description of it.
-            if let Err(why) = msg.channel_id.say(&ctx.http, "Pong!").await {
-                println!("Error sending message: {why:?}");
-            }
-        }
-    }
-
+#[serenity::async_trait]
+impl serenity::EventHandler for Handler {
     // Set a handler to be called on the `ready` event. This is called when a shard is booted, and
     // a READY payload is sent by Discord. This payload contains data like the current user's guild
     // Ids, current user data, private channels, and more.
     //
     // In this case, just print what the current user's username is.
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, _: serenity::Context, ready: serenity::Ready) {
         println!("{} is connected!", ready.user.name);
     }
+}
+
+struct Data {} // User data, which is stored and accessible in all command invocations
+
+type Error = Box<dyn std::error::Error + Send + Sync>;
+type Context<'a> = poise::Context<'a, Data, Error>;
+
+/// Displays your or another user's account creation date
+#[poise::command(slash_command, prefix_command)]
+async fn age(
+    ctx: Context<'_>,
+    #[description = "Selected user"] user: Option<serenity::User>,
+) -> Result<(), Error> {
+    let u = user.as_ref().unwrap_or_else(|| ctx.author());
+    let response = format!("{}'s account was created at {}", u.name, u.created_at());
+    ctx.say(response).await?;
+    Ok(())
+}
+
+#[poise::command(slash_command, prefix_command)]
+async fn ping(
+    ctx: Context<'_>,
+    #[description = "Message"] message: Option<String>,
+) -> Result<(), Error> {
+    if let Some(msg) = message {
+        ctx.say(format!("{} Pong!", msg)).await?;
+    } else {
+        ctx.say("Pong!").await?;
+    }
+    Ok(())
 }
 
 #[tokio::main]
@@ -40,13 +51,30 @@ async fn main() {
     // Login with a bot token from the environment
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     // Set gateway intents, which decides what events the bot will be notified about
-    let intents = GatewayIntents::GUILD_MESSAGES
-        | GatewayIntents::DIRECT_MESSAGES
-        | GatewayIntents::MESSAGE_CONTENT;
+    let intents = serenity::GatewayIntents::GUILD_MESSAGES
+        | serenity::GatewayIntents::DIRECT_MESSAGES
+        | serenity::GatewayIntents::MESSAGE_CONTENT;
+
+    let framework = poise::Framework::builder()
+        .options(poise::FrameworkOptions {
+            commands: vec![age(), ping()],
+            prefix_options: PrefixFrameworkOptions {
+                prefix: Some("!".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .setup(|ctx, _ready, framework| {
+            Box::pin(async move {
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                Ok(Data {})
+            })
+        })
+        .build();
 
     // Create a new instance of the Client, logging in as a bot.
     let mut client =
-        Client::builder(&token, intents).event_handler(Handler).await.expect("Err creating client");
+        serenity::Client::builder(&token, intents).framework(framework).event_handler(Handler).await.expect("Err creating client");
 
     // Start listening for events by starting a single shard
     if let Err(why) = client.start().await {
