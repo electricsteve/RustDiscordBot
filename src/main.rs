@@ -1,3 +1,6 @@
+mod components;
+mod component;
+
 use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
 use std::env;
 
@@ -5,11 +8,13 @@ struct Handler;
 
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
-    // Set a handler to be called on the `ready` event. This is called when a shard is booted, and
-    // a READY payload is sent by Discord. This payload contains data like the current user's guild
-    // Ids, current user data, private channels, and more.
-    //
-    // In this case, just print what the current user's username is.
+    /*
+Set a handler to be called on the `ready` event. This is called when a shard is booted, and
+a READY payload is sent by Discord. This payload contains data like the current user's guild
+Ids, current user data, private channels, and more.
+
+In this case, just print what the current user's username is.
+*/
     async fn ready(&self, _: serenity::Context, ready: serenity::Ready) {
         println!("{} is connected!", ready.user.name);
     }
@@ -51,8 +56,7 @@ async fn main() {
     // Login with a bot token from the environment
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     // Set gateway intents, which decides what events the bot will be notified about
-    let intents = serenity::GatewayIntents::GUILD_MESSAGES
-        | serenity::GatewayIntents::DIRECT_MESSAGES
+    let intents = serenity::GatewayIntents::non_privileged()
         | serenity::GatewayIntents::MESSAGE_CONTENT;
 
     let framework = poise::Framework::builder()
