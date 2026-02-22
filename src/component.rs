@@ -1,8 +1,9 @@
 use poise::Command;
 use serenity::all::EventHandler;
 
-// TODO: implement standardized permission checks
+// TODO: standardized permission checks
 // Implement permission checks for commands so modules don't have to check them manually.
+// Could maybe contain some logic so modules can specify what kind of permission checks to use.
 pub struct Component {
     /// List of commands to register with the bot.
     /// Some checks should be manually done, such as permission checks,
