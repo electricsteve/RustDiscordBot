@@ -70,7 +70,9 @@ async fn main() {
         })
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
+                // Register commands globally with discord
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                // Return Data struct
                 Ok(Data {})
             })
         })
