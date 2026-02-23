@@ -37,18 +37,18 @@ async fn age(
     Ok(())
 }
 
-#[poise::command(slash_command, prefix_command)]
-async fn ping(
-    ctx: Context<'_>,
-    #[description = "Message"] message: Option<String>,
-) -> Result<(), Error> {
-    if let Some(msg) = message {
-        ctx.say(format!("{} Pong!", msg)).await?;
-    } else {
-        ctx.say("Pong!").await?;
-    }
-    Ok(())
-}
+// #[poise::command(slash_command, prefix_command)]
+// async fn ping(
+//     ctx: Context<'_>,
+//     #[description = "Message"] message: Option<String>,
+// ) -> Result<(), Error> {
+//     if let Some(msg) = message {
+//         ctx.say(format!("{} Pong!", msg)).await?;
+//     } else {
+//         ctx.say("Pong!").await?;
+//     }
+//     Ok(())
+// }
 
 #[tokio::main]
 async fn main() {
@@ -61,7 +61,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![age(), ping()],
+            commands: vec![age()],
             prefix_options: PrefixFrameworkOptions {
                 prefix: Some("!".to_string()),
                 ..Default::default()
