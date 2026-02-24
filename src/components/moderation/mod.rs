@@ -1,5 +1,5 @@
 use crate::component::Component;
-use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
+use poise::{serenity_prelude as serenity};
 use crate::{Context, Error};
 
 pub fn component() -> Box<Component> {

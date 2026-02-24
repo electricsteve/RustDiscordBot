@@ -26,16 +26,16 @@ type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
 /// Displays your or another user's account creation date
-#[poise::command(slash_command, prefix_command)]
-async fn age(
-    ctx: Context<'_>,
-    #[description = "Selected user"] user: Option<serenity::User>,
-) -> Result<(), Error> {
-    let u = user.as_ref().unwrap_or_else(|| ctx.author());
-    let response = format!("{}'s account was created at {}", u.name, u.created_at());
-    ctx.say(response).await?;
-    Ok(())
-}
+// #[poise::command(slash_command, prefix_command)]
+// async fn age(
+//     ctx: Context<'_>,
+//     #[description = "Selected user"] user: Option<serenity::User>,
+// ) -> Result<(), Error> {
+//     let u = user.as_ref().unwrap_or_else(|| ctx.author());
+//     let response = format!("{}'s account was created at {}", u.name, u.created_at());
+//     ctx.say(response).await?;
+//     Ok(())
+// }
 
 // #[poise::command(slash_command, prefix_command)]
 // async fn ping(
@@ -59,9 +59,13 @@ async fn main() {
     let intents = serenity::GatewayIntents::non_privileged()
         | serenity::GatewayIntents::MESSAGE_CONTENT;
 
+    let components = components::get_components();
+    let commands = components.iter().flat_map(|component| component.commands.iter()).collect::<Vec<_>>();
+    let event_handlers = components.into_iter().map(|component| component.event_handler).collect::<Vec<_>>();
+
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![age()],
+            commands,
             prefix_options: PrefixFrameworkOptions {
                 prefix: Some("!".to_string()),
                 ..Default::default()
