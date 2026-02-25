@@ -3,6 +3,7 @@ mod component;
 
 use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
 use std::env;
+use std::sync::Arc;
 
 struct Handler;
 
@@ -37,19 +38,6 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 //     Ok(())
 // }
 
-// #[poise::command(slash_command, prefix_command)]
-// async fn ping(
-//     ctx: Context<'_>,
-//     #[description = "Message"] message: Option<String>,
-// ) -> Result<(), Error> {
-//     if let Some(msg) = message {
-//         ctx.say(format!("{} Pong!", msg)).await?;
-//     } else {
-//         ctx.say("Pong!").await?;
-//     }
-//     Ok(())
-// }
-
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
@@ -60,8 +48,8 @@ async fn main() {
         | serenity::GatewayIntents::MESSAGE_CONTENT;
 
     let components = components::get_components();
-    let commands = components.iter().flat_map(|component| component.commands.iter()).collect::<Vec<_>>();
-    let event_handlers = components.into_iter().map(|component| component.event_handler).collect::<Vec<_>>();
+    let commands = components.iter().flat_map(|component| component.commands.iter()).map(|cmd| cmd()).collect::<Vec<_>>();
+    let event_handlers = components.into_iter().map(|component| component.event_handler);
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -83,8 +71,10 @@ async fn main() {
         .build();
 
     // Create a new instance of the Client, logging in as a bot.
+    let mut client_builder = serenity::Client::builder(&token, intents).framework(framework).event_handler(Handler);
+    // event_handlers.for_each(|event_handler| client_builder = client_builder.event_handler_arc(event_handler));
     let mut client =
-        serenity::Client::builder(&token, intents).framework(framework).event_handler(Handler).await.expect("Err creating client");
+        client_builder.await.expect("Err creating client");
 
     // Start listening for events by starting a single shard
     if let Err(why) = client.start().await {

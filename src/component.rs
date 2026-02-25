@@ -10,7 +10,7 @@ pub struct Component {
     /// List of commands to register with the bot.
     /// Some checks should be manually done, such as permission checks,
     /// but it's not needed to check if the module is active.
-    pub commands: Vec<Command<crate::Data, crate::Error>>,
+    pub commands: Vec<fn() -> Command<crate::Data, crate::Error>>,
     /// An event handler struct.
     pub event_handler: Box<dyn EventHandler + 'static>,
 }

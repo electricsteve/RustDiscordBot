@@ -1,11 +1,11 @@
 use crate::component::Component;
-use poise::{serenity_prelude as serenity};
 use crate::{Context, Error};
+use poise::serenity_prelude as serenity;
 
 pub fn component() -> Box<Component> {
     Box::new(Component {
         id: "".to_string(),
-        commands: vec![ping()],
+        commands: vec![ping],
         event_handler: Box::new(Handler)
     })
 }
