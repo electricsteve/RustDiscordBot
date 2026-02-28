@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::component::Component;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
@@ -6,7 +7,7 @@ pub fn component() -> Box<Component> {
     Box::new(Component {
         id: "".to_string(),
         commands: vec![ping],
-        event_handler: Box::new(Handler)
+        event_handler: Arc::new(Handler)
     })
 }
 

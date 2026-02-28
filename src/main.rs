@@ -3,6 +3,7 @@ mod component;
 
 use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
 use std::env;
+use serenity::all::Event;
 
 struct Handler;
 
@@ -25,6 +26,14 @@ struct Data {} // User data, which is stored and accessible in all command invoc
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
+struct RawHandler;
+
+#[serenity::async_trait]
+impl serenity::RawEventHandler for RawHandler {
+    async fn raw_event(&self, _ctx: serenity::all::Context, _ev: Event) {
+        todo!()
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +46,7 @@ async fn main() {
 
     let components = components::get_components();
     let commands = components.iter().flat_map(|component| component.commands.iter()).map(|cmd| cmd()).collect::<Vec<_>>();
-    let event_handlers = components.into_iter().map(|component| component.event_handler);
+    let event_handlers = components.into_iter().map(|component| component.event_handler).collect::<Vec<_>>();
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -59,8 +68,10 @@ async fn main() {
         .build();
 
     // Create a new instance of the Client, logging in as a bot.
-    let mut client_builder = serenity::Client::builder(&token, intents).framework(framework).event_handler(Handler);
-    // event_handlers.for_each(|event_handler| client_builder = client_builder.event_handler_arc(event_handler));
+    let mut client_builder = serenity::Client::builder(&token, intents).framework(framework).event_handler(Handler).raw_event_handler(RawHandler);
+    // for event_handler in event_handlers {
+    //     client_builder = client_builder.event_handler_arc(event_handler)
+    // }
     let mut client =
         client_builder.await.expect("Err creating client");
 
