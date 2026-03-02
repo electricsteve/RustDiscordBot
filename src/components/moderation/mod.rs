@@ -6,7 +6,7 @@ use serenity::all::FullEvent;
 
 pub fn component() -> Box<Component> {
     Box::new(Component {
-        id: "".to_string(),
+        id: "moderation".to_string(),
         commands: vec![ping],
         event_handler: Arc::new(Handler)
     })

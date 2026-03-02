@@ -5,23 +5,24 @@ use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
 use serenity::all::FullEvent;
 use std::sync::Arc;
 
-struct Handler {
-    event_handlers: Vec<Arc<dyn serenity::EventHandler + 'static>>,
-}
+struct Handler;
 
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
-    async fn dispatch(&self, _context: &serenity::all::Context, event: &FullEvent) {
+    async fn dispatch(&self, context: &serenity::all::Context, event: &FullEvent) {
         if let FullEvent::Ready { data_about_bot , .. } = event {
             println!("{} is connected!", data_about_bot.user.name);
         }
-        for handler in &self.event_handlers {
-            handler.dispatch(_context, event).await;
+        let data: Arc<Data> = context.data();
+        for component in &data.components {
+            component.event_handler.dispatch(context, event).await;
         }
     }
 }
 
-struct Data {} // User data, which is stored and accessible in all command invocations
+struct Data {
+    components: Vec<component::Component>,
+} // User data, which is stored and accessible in all command invocations
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -48,7 +49,6 @@ async fn main() {
 
     let components = components::get_components();
     let mut commands = components.iter().flat_map(|component| component.commands.iter()).map(|cmd| cmd()).collect::<Vec<_>>();
-    let event_handlers = components.into_iter().map(|component| component.event_handler).collect::<Vec<_>>();
 
     commands.push(register_commands());
 
@@ -62,9 +62,11 @@ async fn main() {
             ..Default::default()
         })
         .build();
-    
-    let handler = Handler { event_handlers };
-    let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(handler));
+
+    let data = Data {
+        components
+    };
+    let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(Handler)).data(Arc::new(data));
     let mut client =
         client_builder.await.expect("Err creating client");
 
