@@ -5,13 +5,18 @@ use poise::{serenity_prelude as serenity, PrefixFrameworkOptions};
 use serenity::all::FullEvent;
 use std::sync::Arc;
 
-struct Handler;
+struct Handler {
+    event_handlers: Vec<Arc<dyn serenity::EventHandler + 'static>>,
+}
 
 #[serenity::async_trait]
 impl serenity::EventHandler for Handler {
     async fn dispatch(&self, _context: &serenity::all::Context, event: &FullEvent) {
         if let FullEvent::Ready { data_about_bot , .. } = event {
             println!("{} is connected!", data_about_bot.user.name);
+        }
+        for handler in &self.event_handlers {
+            handler.dispatch(_context, event).await;
         }
     }
 }
@@ -32,6 +37,7 @@ async fn register_commands(ctx: Context<'_>) -> Result<(), Error> {
 
 #[tokio::main]
 async fn main() {
+    // TODO: remove dotenv dependency
     dotenv::dotenv().ok();
     // Login with a bot token from the environment
     let token = serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
@@ -55,15 +61,9 @@ async fn main() {
             ..Default::default()
         })
         .build();
-
-    // Create a new instance of the Client, logging in as a bot.
-    // TODO: event handler proxy
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/3
-    // Only 1 event handler can be registered in new serenity, so make a "proxy" event handler
-    let mut client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(Handler));
-    for event_handler in event_handlers {
-        client_builder = client_builder.event_handler(event_handler)
-    }
+    
+    let handler = Handler { event_handlers };
+    let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(handler));
     let mut client =
         client_builder.await.expect("Err creating client");
 
