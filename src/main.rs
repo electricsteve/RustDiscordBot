@@ -21,8 +21,13 @@ impl serenity::EventHandler for Handler {
 }
 
 struct Data {
+    // TODO: component management
+    // Turn individual components on and off at runtime.
     components: Vec<component::Component>,
-} // User data, which is stored and accessible in all command invocations
+    // TODO: database
+    // A database components and use to store data.
+    // Also use the database for storing component management data.
+}
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
