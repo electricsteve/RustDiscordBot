@@ -22,9 +22,11 @@ impl serenity::EventHandler for Handler {
 
 struct Data {
     // TODO: component management
+    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/6
     // Turn individual components on and off at runtime.
     components: Vec<component::Component>,
     // TODO: database
+    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/5
     // A database components and use to store data.
     // Also use the database for storing component management data.
 }
