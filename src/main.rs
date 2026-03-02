@@ -38,6 +38,7 @@ async fn register_commands(ctx: Context<'_>) -> Result<(), Error> {
 #[tokio::main]
 async fn main() {
     // TODO: remove dotenv dependency
+    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/4
     dotenv::dotenv().ok();
     // Login with a bot token from the environment
     let token = serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
