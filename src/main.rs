@@ -129,6 +129,7 @@ fn command_check(ctx: poise::Context<'_, Data, Error>) -> BoxFuture<'_, Result<b
             Some(command_data) => &command_data.component_id,
             None => {
                 // TODO: add tracing
+                // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/7
                 // tracing::warn!("Command custom data is not of type CommandData");
                 ctx.say("An error occured while checking command component!").await?;
                 return Ok(true);
