@@ -7,11 +7,11 @@ use poise::serenity_prelude::EventHandler;
 // Implement permission checks for commands so modules don't have to check them manually.
 // Could maybe contain some logic so modules can specify what kind of permission checks to use.
 pub struct Component {
-    #[allow(dead_code)]
     pub id: String,
     /// List of commands to register with the bot.
     /// Some checks should be manually done, such as permission checks,
     /// but it's not needed to check if the module is active.
+    /// WARNING: this is a list of functions and so you cannot check equality
     pub commands: Vec<fn() -> Command<crate::Data, crate::Error>>,
     /// An event handler struct.
     pub event_handler: Arc<dyn EventHandler + 'static>,
