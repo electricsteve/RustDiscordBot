@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use poise::{BoxFuture, Command, PrefixFrameworkOptions, serenity_prelude::{self as serenity}};
 use serenity::all::FullEvent;
 use std::sync::{Arc, Mutex};
+use crate::component::Component;
 
 struct Handler;
 
@@ -87,10 +88,8 @@ async fn main() {
 
     for component in &components {
         for command_fn in &component.commands {
-            let mut command = command_fn();
-            command.custom_data = Box::new(CommandData {
-                component_id: component.id.clone(),
-            });
+            let mut command: Command<Data, Error> = command_fn();
+            add_custom_data(&mut command, component);
             commands.push(command);
         }
     }
@@ -146,4 +145,16 @@ fn command_check(ctx: poise::Context<'_, Data, Error>) -> BoxFuture<'_, Result<b
             Ok(true)
         }
     })
+}
+
+fn add_custom_data(command: &mut Command<Data, Error>, component: &Component) {
+    command.custom_data = Box::new(CommandData {
+        component_id: component.id.clone(),
+    });
+    if !command.subcommands.is_empty() {
+        for subcommand in &mut command.subcommands {
+            // Pray this goes well and doesn't ever cause an infinite recursion
+            add_custom_data(subcommand, component);
+        }
+    }
 }
