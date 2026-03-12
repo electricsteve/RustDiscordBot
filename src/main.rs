@@ -1,23 +1,59 @@
 mod components;
 mod component;
+mod core_component;
 
-use std::collections::HashMap;
-use poise::{BoxFuture, Command, PrefixFrameworkOptions, serenity_prelude::{self as serenity}};
-use serenity::all::FullEvent;
-use std::sync::{Arc, Mutex};
 use crate::component::Component;
+use poise::{serenity_prelude::self as serenity, Command, PrefixFrameworkOptions};
+use serenity::all::FullEvent;
+use std::collections::HashMap;
+use std::env;
+use std::sync::{Arc, Mutex};
+use surrealdb::engine::local::{Db, SurrealKv};
+use surrealdb::Surreal;
 
-struct Handler;
+#[tokio::main]
+async fn main() {
+    // Get environment
+    // TODO: remove dotenv dependency
+    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/4
+    dotenv::dotenv().ok();
+    let ( token, database_path ) = get_environment();
+    let intents = serenity::GatewayIntents::non_privileged()
+        | serenity::GatewayIntents::MESSAGE_CONTENT;
+
+    // Setup components & commands
+    let components = components::get_components();
+    let mut commands : Vec<Command<GlobalData, Error>> = Vec::new();
+    core_component::custom_data(&components, &mut commands);
+    commands.append(&mut core_component::commands());
+
+    // Setup framework
+    let framework = get_framework(commands);
+    let db = get_database(database_path).await;
+    let data = get_data(db, components);
+
+    // Build client
+    let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(MainEventHandler)).data(Arc::new(data));
+    let mut client =
+        client_builder.await.expect("Error creating client");
+
+    // Start bot
+    if let Err(why) = client.start().await {
+        println!("Client error: {why:?}");
+    }
+}
+
+struct MainEventHandler;
 
 #[serenity::async_trait]
-impl serenity::EventHandler for Handler {
+impl serenity::EventHandler for MainEventHandler {
     async fn dispatch(&self, context: &serenity::all::Context, event: &FullEvent) {
         if let FullEvent::Ready { data_about_bot , .. } = event {
             println!("{} is connected!", data_about_bot.user.name);
         }
-        let data: Arc<Data> = context.data();
+        let data: Arc<GlobalData> = context.data();
         for component in &data.components {
-            if !data.enabled_components.lock().unwrap().contains(&component.id) {
+            if !data.enabled_components.lock().unwrap().contains(&component.id) && component.id != "core" {
                 continue;
             }
             component.event_handler.dispatch(context, event).await;
@@ -25,136 +61,54 @@ impl serenity::EventHandler for Handler {
     }
 }
 
-struct Data {
+struct GlobalData {
     // TODO: component management
     // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/6
     // Turn individual components on and off at runtime.
-    components: Vec<component::Component>,
+    components: Vec<Component>,
     enabled_components: Mutex<Vec<String>>,
-    todo_map: Mutex<HashMap<serenity::UserId, Vec<String>>>
+    todo_map: Mutex<HashMap<serenity::UserId, Vec<String>>>,
+    database: Surreal<Db>,
     // TODO: database
     // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/5
     // A database components and use to store data.
     // Also use the database for storing component management data.
 }
 
-struct CommandData {
-    component_id: String,
-}
 
 type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
+type Context<'a> = poise::Context<'a, GlobalData, Error>;
 
-#[poise::command(prefix_command, owners_only, custom_data = "CommandData { component_id: \"core\".to_string() }")]
-async fn register_commands(ctx: Context<'_>) -> Result<(), Error> {
-    let commands = &ctx.framework().options().commands;
-    poise::builtins::register_globally(ctx.http(), commands).await?;
-
-    ctx.say("Successfully registered slash commands!").await?;
-    Ok(())
-}
-
-#[poise::command(prefix_command, slash_command, owners_only, custom_data = "CommandData { component_id: \"core\".to_string() }")]
-async fn toggle_component(ctx: Context<'_>, #[description = "The ID of the component to toggle"] component_id: String) -> Result<(), Error> {
-    let data = ctx.data();
-    if !data.components.iter().any(|c| c.id == component_id) {
-        ctx.say(format!("Component with ID `{component_id}` not found!")).await?;
-        return Ok(());
-    }
-    if data.enabled_components.lock().unwrap().contains(&component_id) {
-        data.enabled_components.lock().unwrap().retain(|id| id != &component_id);
-        ctx.say(format!("Component `{component_id}` disabled!")).await?;
-    } else {
-        data.enabled_components.lock().unwrap().push(component_id.clone());
-        ctx.say(format!("Component `{component_id}` enabled!")).await?;
-    }
-    // ctx.say("Successfully registered slash commands!").await?;
-    Ok(())
-}
-
-#[tokio::main]
-async fn main() {
-    // TODO: remove dotenv dependency
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/4
-    dotenv::dotenv().ok();
-    // Login with a bot token from the environment
+fn get_environment() -> (serenity::Token, String) {
     let token = serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
-    // Set gateway intents, which decides what events the bot will be notified about
-    let intents = serenity::GatewayIntents::non_privileged()
-        | serenity::GatewayIntents::MESSAGE_CONTENT;
+    let database_path = env::var("DATABASE_PATH").unwrap_or("database".to_string());
+    (token, database_path)
+}
 
-    let components = components::get_components();
-    let mut commands : Vec<Command<crate::Data, crate::Error>> = Vec::new();
-
-    for component in &components {
-        for command_fn in &component.commands {
-            let mut command: Command<Data, Error> = command_fn();
-            add_custom_data(&mut command, component);
-            commands.push(command);
-        }
+fn get_data(db: Surreal<Db>, components: Vec<Component>) -> GlobalData {
+    GlobalData {
+        enabled_components: Mutex::new(components.iter().map(|c| c.id.clone()).collect()),
+        components,
+        todo_map: Mutex::new(HashMap::new()),
+        database: db,
     }
+}
 
-    commands.push(register_commands());
-    commands.push(toggle_component());
-
-    let framework = poise::Framework::builder()
+fn get_framework(commands: Vec<Command<GlobalData, Error>>) -> poise::Framework<GlobalData, Error> {
+    poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands,
             prefix_options: PrefixFrameworkOptions {
                 prefix: Some("!".into()),
                 ..Default::default()
             },
-            command_check: Some(command_check),
+            command_check: Some(core_component::command_check),
             ..Default::default()
         })
-        .build();
-
-    let data = Data {
-        enabled_components: Mutex::new(components.iter().map(|c| c.id.clone()).collect()),
-        components,
-        todo_map: Mutex::new(HashMap::new()),
-    };
-    data.enabled_components.lock().unwrap().push("core".to_string());
-    let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(Handler)).data(Arc::new(data));
-    let mut client =
-        client_builder.await.expect("Err creating client");
-
-    // Start listening for events by starting a single shard
-    if let Err(why) = client.start().await {
-        println!("Client error: {why:?}");
-    }
+        .build()
 }
 
-fn command_check(ctx: poise::Context<'_, Data, Error>) -> BoxFuture<'_, Result<bool, Error>> {
-    Box::pin(async move {
-        let component_id = match &ctx.command().custom_data.downcast_ref::<CommandData>() {
-            Some(command_data) => &command_data.component_id,
-            None => {
-                // TODO: add tracing
-                // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/7
-                // tracing::warn!("Command custom data is not of type CommandData");
-                ctx.say("An error occured while checking command component!").await?;
-                return Ok(true);
-            }
-        };
-        let data = ctx.data();
-        if !data.enabled_components.lock().unwrap().contains(component_id) {
-            ctx.say("This component is not enabled!").await?;
-            Ok(false)
-        } else {
-            Ok(true)
-        }
-    })
-}
 
-fn add_custom_data(command: &mut Command<Data, Error>, component: &Component) {
-    command.custom_data = Box::new(CommandData {
-        component_id: component.id.clone(),
-    });
-    if !command.subcommands.is_empty() {
-        for subcommand in &mut command.subcommands {
-            // Pray this goes well and doesn't ever cause an infinite recursion
-            add_custom_data(subcommand, component);
-        }
-    }
+async fn get_database(path: String) -> Surreal<Db> {
+    Surreal::new::<SurrealKv>(path).await.expect("Failed to initialize database")
 }

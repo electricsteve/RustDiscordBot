@@ -12,7 +12,7 @@ pub struct Component {
     /// Some checks should be manually done, such as permission checks,
     /// but it's not needed to check if the module is active.
     /// WARNING: this is a list of functions and so you cannot check equality
-    pub commands: Vec<fn() -> Command<crate::Data, crate::Error>>,
+    pub commands: Vec<fn() -> Command<crate::GlobalData, crate::Error>>,
     /// An event handler struct.
     pub event_handler: Arc<dyn EventHandler + 'static>,
 }

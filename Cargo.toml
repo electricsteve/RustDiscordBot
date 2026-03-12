@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 dotenv = "0.15.0"
-poise = { git = "https://github.com/serenity-rs/poise.git", rev = "17e247cb727e29a5718235e1ad15af22dfb23396" }
-serenity = { git = "https://github.com/serenity-rs/serenity.git", rev = "968c30d9ea9447f5971994e9684804bcac5afb10" }
-tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+poise = { git = "https://github.com/serenity-rs/poise.git", rev = "8807088ee077f81c2b88d54d065b82b4c7dce28d" }
+serenity = { git = "https://github.com/serenity-rs/serenity.git", rev = "ef40347b518d9489204da3b954fbf4d5104a9e9a" }
+surrealdb = { version = "3.0.3", features = ["kv-mem", "protocol-ws", "kv-surrealkv"] }
+tokio = { version = "1.50.0", features = ["macros", "rt-multi-thread"] }
