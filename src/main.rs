@@ -68,6 +68,7 @@ struct GlobalData {
     components: Vec<Component>,
     enabled_components: Mutex<Vec<String>>,
     todo_map: Mutex<HashMap<serenity::UserId, Vec<String>>>,
+    #[allow(dead_code)]
     database: Surreal<Db>,
     // TODO: database
     // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/5
