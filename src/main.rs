@@ -12,6 +12,7 @@ use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
 
 // TODO: global config through env and/or config file
+// Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/8
 // Also relates to #4
 
 #[tokio::main]
