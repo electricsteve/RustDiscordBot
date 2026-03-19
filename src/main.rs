@@ -11,6 +11,9 @@ use std::sync::{Arc, Mutex};
 use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
 
+// TODO: global config through env and/or config file
+// Also relates to #4
+
 #[tokio::main]
 async fn main() {
     // Get environment
@@ -30,6 +33,7 @@ async fn main() {
     // Setup framework
     let framework = get_framework(commands);
     let db = get_database(database_path).await;
+    db.use_ns("rust_discord_bot").use_db("main").await.expect("Failed to select database namespace");
     let data = get_data(db, components);
 
     // Build client
