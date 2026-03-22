@@ -1,6 +1,12 @@
+use std::future::Future;
+use std::pin::Pin;
 use std::sync::Arc;
 use poise::Command;
 use poise::serenity_prelude::EventHandler;
+
+pub type InitializerFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<(), crate::Error>> + Send + 'a>>;
+pub type Initializer = for<'a> fn(&'a mut crate::GlobalData) -> InitializerFuture<'a>;
 
 // TODO: standardized permission checks
 // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/1
@@ -15,4 +21,5 @@ pub struct Component {
     pub commands: Vec<fn() -> Command<crate::GlobalData, crate::Error>>,
     /// An event handler struct.
     pub event_handler: Arc<dyn EventHandler + 'static>,
+    pub initializer: Option<Initializer>,
 }

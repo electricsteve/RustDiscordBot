@@ -35,7 +35,20 @@ async fn main() {
     let framework = get_framework(commands);
     let db = get_database(database_path).await;
     db.use_ns("rust_discord_bot").use_db("main").await.expect("Failed to select database namespace");
-    let data = get_data(db, components);
+    let mut data = get_data(db, components);
+
+    // Run component initializers. Collect first to avoid borrowing `data` both immutably and mutably.
+    let initializers: Vec<(String, crate::component::Initializer)> = data
+        .components
+        .iter()
+        .filter_map(|component| component.initializer.map(|initializer| (component.id.clone(), initializer)))
+        .collect();
+
+    for (component_id, initializer) in initializers {
+        if let Err(why) = initializer(&mut data).await {
+            println!("Error initializing component {}: {why:?}", component_id);
+        }
+    }
 
     // Build client
     let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(MainEventHandler)).data(Arc::new(data));

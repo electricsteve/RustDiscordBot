@@ -1,6 +1,7 @@
 mod database;
 mod constants;
 
+use crate::component::InitializerFuture;
 use crate::component::Component;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
@@ -11,7 +12,15 @@ pub fn component() -> Box<Component> {
     Box::new(Component {
         id: constants::COMPONENT_ID.to_string(),
         commands: vec![todo],
-        event_handler: Arc::new(Handler)
+        event_handler: Arc::new(Handler),
+        initializer: Some(|data| Box::pin(initializer(data))),
+    })
+}
+
+fn initializer(data: &mut crate::GlobalData) -> InitializerFuture<'_> {
+    Box::pin(async move {
+        database::migrate(&data.database).await?;
+        Ok(())
     })
 }
 
@@ -60,9 +69,10 @@ pub async fn add(ctx: Context<'_>, content: String) -> Result<(), Error> {
     let data = ctx.data();
     {
         let mut hash_map = data.todo_map.lock().unwrap();
-        let num_votes = hash_map.entry(user_id).or_default();
-        num_votes.push(content.clone());
+        let todo_list = hash_map.entry(user_id).or_default();
+        todo_list.push(content.clone());
     }
+    database::add_todo(user_id, content.clone(), &data.database).await;
     ctx.say(format!("Successfully added `{content}` to your to-do list!")).await?;
     Ok(())
 }

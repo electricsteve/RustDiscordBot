@@ -8,7 +8,8 @@ pub fn component() -> Box<Component> {
     Box::new(Component {
         id: "moderation".to_string(),
         commands: vec![ping],
-        event_handler: Arc::new(Handler)
+        event_handler: Arc::new(Handler),
+        initializer: None,
     })
 }
 
