@@ -1,6 +1,7 @@
 mod database;
 mod constants;
 
+use std::mem::replace;
 use crate::component::InitializerFuture;
 use crate::component::Component;
 use crate::{Context, Error};
@@ -45,7 +46,9 @@ async fn list(ctx: Context<'_>) -> Result<(), Error> {
         ctx.say("There is currently nothing on your to-do list.").await?;
     } else {
         let formatted_list: String = todo_list.join("\n- ");
-        ctx.say(format!("These are the items on your to-do list:\n- {}", formatted_list)).await?;
+        let response = format!("These are the items on your to-do list:\n- {}", formatted_list);
+        let reply = crate::utils::messages::silent_mentions(response.as_str());
+        ctx.send(reply).await?;
     }
     Ok(())
 }

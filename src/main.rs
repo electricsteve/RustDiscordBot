@@ -1,6 +1,7 @@
 mod components;
 mod component;
 mod core_component;
+pub mod utils;
 
 use crate::component::Component;
 use poise::{serenity_prelude::self as serenity, Command, PrefixFrameworkOptions};
