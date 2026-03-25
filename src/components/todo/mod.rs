@@ -53,7 +53,7 @@ async fn list(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-#[poise::command(prefix_command, slash_command, subcommands("list", "add"), subcommand_required)]
+#[poise::command(prefix_command, slash_command, subcommands("list", "add", "remove"), subcommand_required)]
 pub async fn todo(_: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
@@ -64,5 +64,24 @@ pub async fn add(ctx: Context<'_>, content: String) -> Result<(), Error> {
     let data = ctx.data();
     database::add_todo(user_id, content.clone(), &data.database).await;
     ctx.say(format!("Successfully added `{content}` to your to-do list!")).await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, slash_command)]
+pub async fn remove(ctx: Context<'_>, index: u32) -> Result<(), Error> {
+    let user_id = ctx.author().id;
+    let data = ctx.data();
+    let result = database::remove_todo(user_id, index, &data.database).await;
+    if let Err(e) = result {
+        let error_message = match e {
+            database::TodoError::EmptyList => "Your to-do list is currently empty.",
+            database::TodoError::InvalidIndex => "The provided index is invalid.",
+        };
+        ctx.say(error_message).await?;
+        return Ok(());
+    } else {
+        let result = result.unwrap();
+        ctx.say(format!("Successfully removed `{result}` from your to-do list!")).await?;
+    }
     Ok(())
 }

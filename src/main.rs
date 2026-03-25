@@ -86,7 +86,6 @@ struct GlobalData {
     // Turn individual components on and off at runtime.
     components: Vec<Component>,
     enabled_components: Mutex<Vec<String>>,
-    todo_map: Mutex<HashMap<serenity::UserId, Vec<String>>>,
     #[allow(dead_code)]
     database: Surreal<Db>,
     // TODO: database
@@ -109,7 +108,6 @@ fn get_data(db: Surreal<Db>, components: Vec<Component>) -> GlobalData {
     GlobalData {
         enabled_components: Mutex::new(components.iter().map(|c| c.id.clone()).collect()),
         components,
-        todo_map: Mutex::new(HashMap::new()),
         database: db,
     }
 }
