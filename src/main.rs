@@ -52,7 +52,10 @@ async fn main() {
     }
 
     // Build client
-    let client_builder = serenity::Client::builder(token, intents).framework(Box::new(framework)).event_handler(Arc::new(MainEventHandler)).data(Arc::new(data));
+    let client_builder = serenity::Client::builder(token, intents)
+        .framework(Box::new(framework))
+        .event_handler(Arc::new(MainEventHandler))
+        .data(Arc::new(data));
     let mut client =
         client_builder.await.expect("Error creating client");
 
@@ -88,10 +91,6 @@ struct GlobalData {
     enabled_components: Mutex<Vec<String>>,
     #[allow(dead_code)]
     database: Surreal<Db>,
-    // TODO: database
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/5
-    // A database components and use to store data.
-    // Also use the database for storing component management data.
 }
 
 
