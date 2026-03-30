@@ -1,16 +1,17 @@
 mod components;
 mod component;
-mod core_component;
+mod core;
 pub mod utils;
+pub mod types;
 
 use crate::component::Component;
 use poise::{serenity_prelude::self as serenity, Command, PrefixFrameworkOptions};
-use serenity::all::FullEvent;
-use std::collections::HashMap;
 use std::env;
 use std::sync::{Arc, Mutex};
 use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
+
+pub use types::{Context, Error, GlobalData};
 
 // TODO: global config through env and/or config file
 // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/8
@@ -29,8 +30,8 @@ async fn main() {
     // Setup components & commands
     let components = components::get_components();
     let mut commands : Vec<Command<GlobalData, Error>> = Vec::new();
-    core_component::custom_data(&components, &mut commands);
-    commands.append(&mut core_component::commands());
+    core::custom_data(&components, &mut commands);
+    commands.append(&mut core::commands());
 
     // Setup framework
     let framework = get_framework(commands);
@@ -38,12 +39,8 @@ async fn main() {
     db.use_ns("rust_discord_bot").use_db("main").await.expect("Failed to select database namespace");
     let mut data = get_data(db, components);
 
-    // Run component initializers. Collect first to avoid borrowing `data` both immutably and mutably.
-    let initializers: Vec<(String, crate::component::Initializer)> = data
-        .components
-        .iter()
-        .filter_map(|component| component.initializer.map(|initializer| (component.id.clone(), initializer)))
-        .collect();
+    // Run component initialisers. Collect first to avoid borrowing `data` both immutably and mutably.
+    let initializers: Vec<(String, component::Initializer)> = data.get_initializers();
 
     for (component_id, initializer) in initializers {
         if let Err(why) = initializer(&mut data).await {
@@ -54,7 +51,7 @@ async fn main() {
     // Build client
     let client_builder = serenity::Client::builder(token, intents)
         .framework(Box::new(framework))
-        .event_handler(Arc::new(MainEventHandler))
+        .event_handler(Arc::new(core::MainEventHandler))
         .data(Arc::new(data));
     let mut client =
         client_builder.await.expect("Error creating client");
@@ -64,38 +61,6 @@ async fn main() {
         println!("Client error: {why:?}");
     }
 }
-
-struct MainEventHandler;
-
-#[serenity::async_trait]
-impl serenity::EventHandler for MainEventHandler {
-    async fn dispatch(&self, context: &serenity::all::Context, event: &FullEvent) {
-        if let FullEvent::Ready { data_about_bot , .. } = event {
-            println!("{} is connected!", data_about_bot.user.name);
-        }
-        let data: Arc<GlobalData> = context.data();
-        for component in &data.components {
-            if !data.enabled_components.lock().unwrap().contains(&component.id) && component.id != "core" {
-                continue;
-            }
-            component.event_handler.dispatch(context, event).await;
-        }
-    }
-}
-
-struct GlobalData {
-    // TODO: component management
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/6
-    // Turn individual components on and off at runtime.
-    components: Vec<Component>,
-    enabled_components: Mutex<Vec<String>>,
-    #[allow(dead_code)]
-    database: Surreal<Db>,
-}
-
-
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, GlobalData, Error>;
 
 fn get_environment() -> (serenity::Token, String) {
     let token = serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
@@ -119,7 +84,7 @@ fn get_framework(commands: Vec<Command<GlobalData, Error>>) -> poise::Framework<
                 prefix: Some("!".into()),
                 ..Default::default()
             },
-            command_check: Some(core_component::command_check),
+            command_check: Some(core::command_check),
             ..Default::default()
         })
         .build()

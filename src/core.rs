@@ -1,6 +1,8 @@
-use poise::{BoxFuture, Command};
-use crate::{Context, GlobalData, Error};
 use crate::component::Component;
+use crate::{Context, Error, GlobalData};
+use poise::{serenity_prelude::self as serenity, Command, BoxFuture};
+use serenity::all::FullEvent;
+use std::sync::Arc;
 
 pub fn commands() -> Vec<Command<GlobalData, Error>> {
     vec![register_commands(), toggle_component()]
@@ -121,6 +123,25 @@ pub fn custom_data(components: &Vec<Component>, commands: &mut Vec<Command<Globa
             let mut command: Command<GlobalData, Error> = command_fn();
             add_custom_data(&mut command, component);
             commands.push(command);
+        }
+    }
+}
+
+
+pub struct MainEventHandler;
+
+#[serenity::async_trait]
+impl serenity::EventHandler for MainEventHandler {
+    async fn dispatch(&self, context: &serenity::all::Context, event: &FullEvent) {
+        if let FullEvent::Ready { data_about_bot , .. } = event {
+            println!("{} is connected!", data_about_bot.user.name);
+        }
+        let data: Arc<GlobalData> = context.data();
+        for component in &data.components {
+            if !data.enabled_components.lock().unwrap().contains(&component.id) && component.id != "core" {
+                continue;
+            }
+            component.event_handler.dispatch(context, event).await;
         }
     }
 }
