@@ -23,6 +23,7 @@ DEFINE FIELD IF NOT EXISTS enabled ON TABLE {COMPONENT_DATA_TABLE} TYPE bool;
     })
 }
 
+// TODO(feat): component settings
 #[derive(SurrealValue)]
 pub struct ComponentData {
     pub id: RecordId,
