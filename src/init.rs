@@ -1,11 +1,9 @@
-use poise::Command;
-use crate::{Error, GlobalData};
 use crate::component::Component;
+use crate::{Error, GlobalData};
+use poise::Command;
 
 fn add_custom_data(command: &mut Command<GlobalData, Error>, component: &Component) {
-    command.custom_data = Box::new(crate::core::CommandData {
-        component_id: component.id.clone(),
-    });
+    command.custom_data = Box::new(crate::core::CommandData { component_id: component.id.clone() });
     if !command.subcommands.is_empty() {
         for subcommand in &mut command.subcommands {
             // Pray this goes well and doesn't ever cause an infinite recursion
@@ -15,12 +13,12 @@ fn add_custom_data(command: &mut Command<GlobalData, Error>, component: &Compone
 }
 
 /// Get commands from components with custom data attached
-/// 
-/// # Arguments 
-/// 
+///
+/// # Arguments
+///
 /// * `components`: The components to take the commands from
 /// * `commands`: The mutable vec to output the commands to
-/// 
+///
 pub fn get_commands(components: &Vec<Component>, commands: &mut Vec<Command<GlobalData, Error>>) {
     for component in components {
         for command_fn in &component.commands {

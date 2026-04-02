@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use crate::component::Component;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
 use serenity::all::FullEvent;
+use std::sync::Arc;
 
 pub fn component() -> Box<Component> {
     Box::new(Component {

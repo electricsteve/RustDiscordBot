@@ -1,8 +1,8 @@
+use poise::Command;
+use poise::serenity_prelude::EventHandler;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
-use poise::Command;
-use poise::serenity_prelude::EventHandler;
 
 pub type InitializerFuture<'a> =
     Pin<Box<dyn Future<Output = Result<(), crate::Error>> + Send + 'a>>;

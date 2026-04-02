@@ -1,16 +1,16 @@
-mod components;
 mod component;
+mod components;
 mod core;
-pub mod utils;
-pub mod types;
 pub mod init;
+pub mod types;
+pub mod utils;
 
 use crate::component::Component;
-use poise::{serenity_prelude::self as serenity, Command, PrefixFrameworkOptions};
+use poise::{Command, PrefixFrameworkOptions, serenity_prelude as serenity};
 use std::env;
 use std::sync::Arc;
-use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
+use surrealdb::engine::local::{Db, SurrealKv};
 
 pub use types::{Context, Error, GlobalData};
 
@@ -24,20 +24,23 @@ async fn main() {
     // TODO: remove dotenv dependency
     // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/4
     dotenv::dotenv().ok();
-    let ( token, database_path ) = get_environment();
-    let intents = serenity::GatewayIntents::non_privileged()
-        | serenity::GatewayIntents::MESSAGE_CONTENT;
+    let (token, database_path) = get_environment();
+    let intents =
+        serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;
 
     // Setup components & commands
     let components = components::get_components();
-    let mut commands : Vec<Command<GlobalData, Error>> = Vec::new();
+    let mut commands: Vec<Command<GlobalData, Error>> = Vec::new();
     init::get_commands(&components, &mut commands);
     commands.append(&mut core::commands());
 
     // Setup framework
     let framework = get_framework(commands);
     let db = get_database(database_path).await;
-    db.use_ns("rust_discord_bot").use_db("main").await.expect("Failed to select database namespace");
+    db.use_ns("rust_discord_bot")
+        .use_db("main")
+        .await
+        .expect("Failed to select database namespace");
     let mut data = get_data(db, components);
 
     // Run component initialisers. Collect first to avoid borrowing `data` both immutably and mutably.
@@ -62,8 +65,7 @@ async fn main() {
         .framework(Box::new(framework))
         .event_handler(Arc::new(core::events::MainEventHandler))
         .data(Arc::new(data));
-    let mut client =
-        client_builder.await.expect("Error creating client");
+    let mut client = client_builder.await.expect("Error creating client");
 
     // Start bot
     if let Err(why) = client.start().await {
@@ -72,16 +74,14 @@ async fn main() {
 }
 
 fn get_environment() -> (serenity::Token, String) {
-    let token = serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
+    let token =
+        serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
     let database_path = env::var("DATABASE_PATH").unwrap_or("database".to_string());
     (token, database_path)
 }
 
 fn get_data(db: Surreal<Db>, components: Vec<Component>) -> GlobalData {
-    GlobalData {
-        components,
-        database: db,
-    }
+    GlobalData { components, database: db }
 }
 
 fn get_framework(commands: Vec<Command<GlobalData, Error>>) -> poise::Framework<GlobalData, Error> {

@@ -2,8 +2,8 @@ use crate::component;
 use crate::component::Component;
 use std::fmt;
 use std::fmt::Formatter;
-use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
+use surrealdb::engine::local::Db;
 
 pub struct GlobalData {
     // TODO: component management
@@ -19,10 +19,11 @@ pub type Context<'a> = poise::Context<'a, GlobalData, Error>;
 
 impl GlobalData {
     pub fn get_initializers(&self) -> Vec<(String, component::Initializer)> {
-        self
-            .components
+        self.components
             .iter()
-            .filter_map(|component| component.initializer.map(|initializer| (component.id.clone(), initializer)))
+            .filter_map(|component| {
+                component.initializer.map(|initializer| (component.id.clone(), initializer))
+            })
             .collect()
     }
 }

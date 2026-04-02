@@ -1,8 +1,8 @@
-mod database;
 mod constants;
+mod database;
 
-use crate::component::InitializerFuture;
 use crate::component::Component;
+use crate::component::InitializerFuture;
 use crate::{Context, Error};
 use poise::serenity_prelude as serenity;
 use serenity::all::FullEvent;
@@ -52,7 +52,12 @@ async fn list(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-#[poise::command(prefix_command, slash_command, subcommands("list", "add", "remove"), subcommand_required)]
+#[poise::command(
+    prefix_command,
+    slash_command,
+    subcommands("list", "add", "remove"),
+    subcommand_required
+)]
 pub async fn todo(_: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
