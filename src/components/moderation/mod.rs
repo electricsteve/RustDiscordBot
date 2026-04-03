@@ -25,28 +25,28 @@ impl serenity::EventHandler for Handler {
 
 // TODO(moderation): basic commands
 // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/10
-// ## Description
+//  ## Description
 //
-// Add some basic commands to the moderation module.
+//  Add some basic commands to the moderation module.
 //
-// ## Requirements
+//  ## Requirements
 //
-// Ban and mute must have time options.
-// User datils must have:
-// - Basic info
-//  - Display name
-//  - Username
-//  - Discord join date
-//  - Server join date
-//  - About me
-// - Server info
-//  - Roles
-// - Connections (w/ links)
+//  Ban and mute must have time options.
+//  User datils must have:
+//  - Basic info
+//   - Display name
+//   - Username
+//   - Discord join date
+//   - Server join date
+//   - About me
+//  - Server info
+//   - Roles
+//  - Connections (w/ links)
 //
-// ## Checklist
+//  ## Checklist
 //
-// - [ ] User details
-// - [ ] Banning
-// - [ ] Muting
-// - [ ] Kicking
-// - [ ] Role management
+//  - [ ] User details
+//  - [ ] Banning
+//  - [ ] Muting
+//  - [ ] Kicking
+//  - [ ] Role management
