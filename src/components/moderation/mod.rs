@@ -22,3 +22,30 @@ impl serenity::EventHandler for Handler {
         }
     }
 }
+
+// TODO(moderation): basic commands
+// ## Description
+//
+// Add some basic commands to the moderation module.
+//
+// ## Requirements
+//
+// Ban and mute must have time options.
+// User datils must have:
+// - Basic info
+//  - Display name
+//  - Username
+//  - Discord join date
+//  - Server join date
+//  - About me
+// - Server info
+//  - Roles
+// - Connections (w/ links)
+//
+// ## Checklist
+//
+// - [ ] User details
+// - [ ] Banning
+// - [ ] Muting
+// - [ ] Kicking
+// - [ ] Role management
