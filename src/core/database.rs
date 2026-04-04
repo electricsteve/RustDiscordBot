@@ -10,7 +10,8 @@ pub fn migrate(data: &mut crate::GlobalData) -> InitializerFuture<'_> {
             .query(format!(
                 "
 DEFINE TABLE IF NOT EXISTS {COMPONENT_DATA_TABLE} SCHEMAFULL;
-DEFINE FIELD IF NOT EXISTS enabled ON TABLE {COMPONENT_DATA_TABLE} TYPE bool;
+DEFINE FIELD IF NOT EXISTS enabled  ON TABLE {COMPONENT_DATA_TABLE} TYPE bool;
+DEFINE FIELD IF NOT EXISTS settings ON TABLE {COMPONENT_DATA_TABLE} TYPE object FLEXIBLE DEFAULT {{}};
         "
             ))
             .await?;
