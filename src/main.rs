@@ -20,10 +20,6 @@ pub use types::{Context, Error, GlobalData};
 
 #[tokio::main]
 async fn main() {
-    // Get environment
-    // TODO: remove dotenv dependency
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/4
-    dotenv::dotenv().ok();
     let (token, database_path) = get_environment();
     let intents =
         serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;

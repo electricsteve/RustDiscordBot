@@ -1,3 +1,7 @@
+include = [
+    "env.toml",
+]
+
 [package]
 name = "RustDiscordBot"
 version = "0.1.0"
