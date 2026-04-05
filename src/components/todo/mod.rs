@@ -1,5 +1,6 @@
 mod constants;
 mod database;
+mod config;
 
 use crate::component::Component;
 use crate::component::InitializerFuture;
