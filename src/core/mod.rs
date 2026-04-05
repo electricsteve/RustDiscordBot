@@ -6,6 +6,7 @@ use crate::core::database::{ComponentData, Enabled};
 use crate::types::ErrorType::{IllegalArgument, NotFound};
 use crate::{Error, GlobalData};
 use poise::{BoxFuture, Command};
+use surrealdb::types::SurrealNone;
 
 pub fn commands() -> Vec<Command<GlobalData, Error>> {
     vec![commands::register_commands(), commands::toggle_component()]
@@ -32,7 +33,7 @@ impl GlobalData {
                 IllegalArgument(format!("Component {} is not allowed.", component_id)).into()
             );
         }
-        let _: Option<ComponentData> = self
+        let _: Option<ComponentData<SurrealNone>> = self
             .database
             .update(ComponentData::id_from_component_string(&component_id))
             .content(Enabled { enabled: true })
@@ -47,7 +48,7 @@ impl GlobalData {
                 IllegalArgument(format!("Component {} is not allowed.", component_id)).into()
             );
         }
-        let _: Option<ComponentData> = self
+        let _: Option<ComponentData<SurrealNone>> = self
             .database
             .update(ComponentData::id_from_component_string(&component_id))
             .content(Enabled { enabled: false })
@@ -59,7 +60,7 @@ impl GlobalData {
         if !Self::component_is_allowed(component_id) {
             return Ok(true);
         }
-        let component: Option<ComponentData> =
+        let component: Option<ComponentData<SurrealNone>> =
             self.database.select(ComponentData::id_from_component_string(component_id)).await?;
         let enabled = match component {
             Some(component) => component.enabled,
