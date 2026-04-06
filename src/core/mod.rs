@@ -33,7 +33,7 @@ impl GlobalData {
                 IllegalArgument(format!("Component {} is not allowed.", component_id)).into()
             );
         }
-        let _: Option<ComponentData<SurrealNone>> = self
+        let _: Option<ComponentData> = self
             .database
             .update(ComponentData::id_from_component_string(&component_id))
             .content(Enabled { enabled: true })
@@ -48,7 +48,7 @@ impl GlobalData {
                 IllegalArgument(format!("Component {} is not allowed.", component_id)).into()
             );
         }
-        let _: Option<ComponentData<SurrealNone>> = self
+        let _: Option<ComponentData> = self
             .database
             .update(ComponentData::id_from_component_string(&component_id))
             .content(Enabled { enabled: false })
@@ -60,7 +60,7 @@ impl GlobalData {
         if !Self::component_is_allowed(component_id) {
             return Ok(true);
         }
-        let component: Option<ComponentData<SurrealNone>> =
+        let component: Option<ComponentData> =
             self.database.select(ComponentData::id_from_component_string(component_id)).await?;
         let enabled = match component {
             Some(component) => component.enabled,
