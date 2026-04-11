@@ -10,3 +10,15 @@ hooks = [
     { id = "check-vcs-permalinks" },
     { id = "trailing-whitespace" },
 ]
+
+[[repos]]
+repo = "local"
+hooks = [
+    {
+        id = "cargo-fmt",
+        name = "cargo fmt",
+        language = "system",
+        entry = "cargo fmt",
+        pass_filenames = false,
+    },
+]
