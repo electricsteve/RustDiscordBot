@@ -90,3 +90,13 @@ pub async fn remove(ctx: Context<'_>, index: u32) -> Result<(), Error> {
     }
     Ok(())
 }
+
+#[poise::command(prefix_command, slash_command)]
+pub async fn set_uwu_config(ctx: Context<'_>, include_uwu: bool) -> Result<(), Error> {
+    let data = ctx.data();
+    let mut cfg = config::get_config(&data.database).await?;
+    cfg.include_uwu = include_uwu;
+    config::update_config(&data.database, cfg).await?;
+    ctx.say(format!("Successfully updated uwu config to `{include_uwu}`!")).await?;
+    Ok(())
+}
