@@ -59,6 +59,8 @@ impl GlobalData {
         if !Self::component_is_allowed(component_id) {
             return Ok(true);
         }
+        // TODO: optimize component enabled check
+        // Add caching to this so we don't query the database on EVERY COMMAND TRIGGER
         let component: Option<ComponentData> =
             self.database.select(ComponentData::id_from_component_string(component_id)).await?;
         let enabled = match component {
