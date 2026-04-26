@@ -1,17 +1,17 @@
 mod component;
 mod components;
 mod core;
+pub mod environment;
 pub mod init;
 pub mod types;
 pub mod utils;
 
-use crate::component::Component;
-use poise::{Command, PrefixFrameworkOptions, serenity_prelude as serenity};
-use std::env;
+use poise::{serenity_prelude as serenity, Command, PrefixFrameworkOptions};
 use std::sync::Arc;
+use surrealdb::engine::local::SurrealKv;
 use surrealdb::Surreal;
-use surrealdb::engine::local::{Db, SurrealKv};
 
+use crate::environment::Environment;
 pub use types::{Context, Error, ErrorType, GlobalData};
 
 // TODO: global config through env and/or config file
@@ -22,9 +22,12 @@ pub use types::{Context, Error, ErrorType, GlobalData};
 async fn main() {
     // Get environment
     // TODO: remove dotenv dependency
+    // Probably get a dockerfile working
     // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/4
     dotenv::dotenv().ok();
-    let (token, database_path) = get_environment();
+    let mut env = Environment::default();
+    env.load_env();
+    let token = env.token.clone().expect("Failed to get discord token");
     let intents =
         serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;
 
@@ -35,13 +38,15 @@ async fn main() {
     commands.append(&mut core::commands());
 
     // Setup framework
-    let framework = get_framework(commands);
-    let db = get_database(database_path).await;
-    db.use_ns("rust_discord_bot")
-        .use_db("main")
+    let framework = get_framework(commands, &env);
+    let db = Surreal::new::<SurrealKv>(env.database_path.clone())
         .await
-        .expect("Failed to select database namespace");
-    let mut data = get_data(db, components);
+        .expect("Failed to initialize database");
+    db.use_ns(env.database_namespace.clone())
+        .use_db(env.database_database.clone())
+        .await
+        .expect("Failed to select database namespace & database");
+    let mut data = GlobalData { components, database: db };
 
     // Run component initialisers. Collect first to avoid borrowing `data` both immutably and mutably.
     let initializers: Vec<(String, component::Initializer)> = data.get_initializers();
@@ -73,31 +78,19 @@ async fn main() {
     }
 }
 
-fn get_environment() -> (serenity::Token, String) {
-    let token =
-        serenity::Token::from_env("DISCORD_TOKEN").expect("Expected a token in the environment");
-    let database_path = env::var("DATABASE_PATH").unwrap_or("database".to_string());
-    (token, database_path)
-}
-
-fn get_data(db: Surreal<Db>, components: Vec<Component>) -> GlobalData {
-    GlobalData { components, database: db }
-}
-
-fn get_framework(commands: Vec<Command<GlobalData, Error>>) -> poise::Framework<GlobalData, Error> {
+fn get_framework(
+    commands: Vec<Command<GlobalData, Error>>,
+    env: &Environment,
+) -> poise::Framework<GlobalData, Error> {
     poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands,
             prefix_options: PrefixFrameworkOptions {
-                prefix: Some("!".into()),
+                prefix: Some(env.prefix.clone().into()),
                 ..Default::default()
             },
             command_check: Some(core::command_check),
             ..Default::default()
         })
         .build()
-}
-
-async fn get_database(path: String) -> Surreal<Db> {
-    Surreal::new::<SurrealKv>(path).await.expect("Failed to initialize database")
 }
