@@ -20,7 +20,7 @@ impl Default for Environment {
             token: None,
             database_namespace: "rust_discord_bot".to_string(),
             database_database: "main".to_string(),
-            database_path: PathBuf::new(),
+            database_path: PathBuf::from("database"),
             prefix: "!".to_string(),
         }
     }
