@@ -60,6 +60,7 @@ impl GlobalData {
             return Ok(true);
         }
         // TODO: Optimize component enabled check
+        // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/15
         // Add caching to this so we don't query the database on EVERY COMMAND TRIGGER
         let component: Option<ComponentData> =
             self.database.select(ComponentData::id_from_component_string(component_id)).await?;

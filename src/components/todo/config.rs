@@ -11,6 +11,7 @@ use surrealdb::Surreal;
 use tokio::sync::RwLock;
 
 // TODO: Component config macro
+// Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/14
 // The current way of getting config to work with a cache is too complicated, this should be made into a macro.
 static SETTINGS: OnceLock<RwLock<TodoConfig>> = OnceLock::new();
 
