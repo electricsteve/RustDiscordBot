@@ -40,4 +40,4 @@ services:
 #   db-password:
 #     file: db/password.txt
 
-# TODO: add option for external database
+# TODO: add option for external database# Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/18
