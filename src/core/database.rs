@@ -1,5 +1,7 @@
 use crate::component::{Component, InitializerFuture};
+use surrealdb::engine::local::Db;
 use surrealdb::types::{RecordId, SurrealValue};
+use surrealdb::Surreal;
 
 const COMPONENT_DATA_TABLE: &str = "component_data";
 
@@ -11,6 +13,7 @@ pub fn migrate(data: &mut crate::GlobalData) -> InitializerFuture<'_> {
                 "
 DEFINE TABLE IF NOT EXISTS {COMPONENT_DATA_TABLE} SCHEMAFULL;
 DEFINE FIELD IF NOT EXISTS enabled ON TABLE {COMPONENT_DATA_TABLE} TYPE bool;
+DEFINE FIELD IF NOT EXISTS config ON TABLE {COMPONENT_DATA_TABLE} TYPE object FLEXIBLE DEFAULT {{}};
         "
             ))
             .await?;
@@ -29,12 +32,39 @@ DEFINE FIELD IF NOT EXISTS enabled ON TABLE {COMPONENT_DATA_TABLE} TYPE bool;
     })
 }
 
-// TODO(feat): component settings
-// Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/9
+pub async fn get_component_config<T: SurrealValue>(
+    id: &str,
+    db: &Surreal<Db>,
+) -> Result<T, crate::Error> {
+    let component_config: Option<ComponentConfig<T>> =
+        db.select(ComponentData::id_from_component_string(id)).await?;
+    if let Some(data) = component_config {
+        Ok(data.config)
+    } else {
+        Err(crate::ErrorType::NotFound(format!("No component config found for id {id}")).into())
+    }
+}
+
+pub async fn set_component_config<T: SurrealValue>(
+    id: &str,
+    config: T,
+    db: &Surreal<Db>,
+) -> Result<(), crate::Error> {
+    let component_config: ComponentConfig<T> = ComponentConfig { config };
+    let _: Option<ComponentConfig<T>> =
+        db.update(ComponentData::id_from_component_string(id)).merge(component_config).await?;
+    Ok(())
+}
+
 #[derive(SurrealValue)]
 pub struct ComponentData {
     pub id: RecordId,
     pub enabled: bool,
+}
+
+#[derive(SurrealValue)]
+pub struct ComponentConfig<T: SurrealValue> {
+    pub config: T,
 }
 
 #[derive(SurrealValue)]

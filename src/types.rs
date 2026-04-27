@@ -29,6 +29,7 @@ impl GlobalData {
 pub enum ErrorType {
     IllegalArgument(String),
     NotFound(String),
+    LockError(String),
 }
 
 impl fmt::Display for ErrorType {
@@ -36,6 +37,7 @@ impl fmt::Display for ErrorType {
         match self {
             ErrorType::IllegalArgument(msg) => write!(f, "Illegal argument: {msg}"),
             ErrorType::NotFound(msg) => write!(f, "Not found: {msg}"),
+            ErrorType::LockError(msg) => write!(f, "Lock error: {msg}"),
         }
     }
 }

@@ -1,8 +1,8 @@
 use crate::component::Component;
 
+pub mod examples;
 pub mod moderation;
 pub mod todo;
-pub mod examples;
 
 pub fn get_components() -> Vec<Component> {
     vec![*moderation::component(), *todo::component(), *examples::component()]

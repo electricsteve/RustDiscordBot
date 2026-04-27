@@ -35,7 +35,7 @@ impl GlobalData {
         let _: Option<ComponentData> = self
             .database
             .update(ComponentData::id_from_component_string(&component_id))
-            .content(Enabled { enabled: true })
+            .merge(Enabled { enabled: true })
             .await?;
         Ok(())
     }
@@ -50,7 +50,7 @@ impl GlobalData {
         let _: Option<ComponentData> = self
             .database
             .update(ComponentData::id_from_component_string(&component_id))
-            .content(Enabled { enabled: false })
+            .merge(Enabled { enabled: false })
             .await?;
         Ok(())
     }
@@ -59,6 +59,9 @@ impl GlobalData {
         if !Self::component_is_allowed(component_id) {
             return Ok(true);
         }
+        // TODO: Optimize component enabled check
+        // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/15
+        // Add caching to this so we don't query the database on EVERY COMMAND TRIGGER
         let component: Option<ComponentData> =
             self.database.select(ComponentData::id_from_component_string(component_id)).await?;
         let enabled = match component {
