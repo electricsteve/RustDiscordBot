@@ -1,7 +1,24 @@
-# Rustey (RustDiscordBot)
+# Rustey
 
 A small, component-driven Discord bot written in Rust using the poise framework and SurrealDB for local storage.
 The main focus for this project is to make it extendable.
+
+## Features
+
+The bot currently has the following commands:
+- `/config` to configure the todo component (will be moved to `/todo`)
+- `/moderation`
+  - `ban` ban someone from the server (admin only)
+  - `kick` kick someone from the server (admin only)
+  - `timeout` timeout someone in the server (admin only)
+  - `user` print info about a user
+- `/ping` pong!
+- `/todo`
+  - `add` add something to your todo list
+  - `list` show your todo list
+  - `remove` remove something from your todo list (BROKEN RN BECAUSE THERE HASN'T BEEN A SURREALDB RELEASE)
+- `/toggle_component` turn individual components on/off (owner only)
+- `!register_commands` register the commands with discord. Only required one time. (owner only)
 
 ## Docker
 
