@@ -5,7 +5,7 @@ use std::path::PathBuf;
 #[derive(Debug)]
 pub struct Environment {
     // TODO: environment variables macro
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/17
+    // Issue URL: https://github.com/electricsteve/Rustey/issues/17
     // Specify fields here, with environment variable names, and let the macro handle them to use in load_env/load_file
     /// PLEASE don't use the discord token unless absolutely necessary. If you know how I can lock it down to only main.rs please tell me.
     pub(crate) token: Option<Token>,
@@ -51,6 +51,6 @@ impl Environment {
     }
 
     // TODO: load config from file
-    // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/16
+    // Issue URL: https://github.com/electricsteve/Rustey/issues/16
     // Add another method to load from a file
 }

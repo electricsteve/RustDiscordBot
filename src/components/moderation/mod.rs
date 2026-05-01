@@ -29,7 +29,7 @@ impl serenity::EventHandler for Handler {
 }
 
 // TODO(moderation): basic commands
-// Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/10
+// Issue URL: https://github.com/electricsteve/Rustey/issues/10
 //  ## Description
 //
 //  Add some basic commands to the moderation module.

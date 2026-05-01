@@ -9,7 +9,7 @@ pub type InitializerFuture<'a> =
 pub type Initializer = for<'a> fn(&'a mut crate::GlobalData) -> InitializerFuture<'a>;
 
 // TODO: standardized permission checks
-// Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/1
+// Issue URL: https://github.com/electricsteve/Rustey/issues/1
 // Implement permission checks for commands so modules don't have to check them manually.
 // Could maybe contain some logic so modules can specify what kind of permission checks to use.
 pub struct Component {

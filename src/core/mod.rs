@@ -60,7 +60,7 @@ impl GlobalData {
             return Ok(true);
         }
         // TODO: Optimize component enabled check
-        // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/15
+        // Issue URL: https://github.com/electricsteve/Rustey/issues/15
         // Add caching to this so we don't query the database on EVERY COMMAND TRIGGER
         let component: Option<ComponentData> =
             self.database.select(ComponentData::id_from_component_string(component_id)).await?;
@@ -86,7 +86,7 @@ pub fn command_check(ctx: Context<'_, GlobalData, Error>) -> BoxFuture<'_, Resul
     Box::pin(async move {
         let Some(component_id) = get_context_component(&ctx) else {
             // TODO: add tracing
-            // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/7
+            // Issue URL: https://github.com/electricsteve/Rustey/issues/7
             // Also add some nice logging for when components load, etc.
             // tracing::warn!("Command custom data is not of type CommandData");
             ctx.say("An error occurred while checking command component!").await?;
