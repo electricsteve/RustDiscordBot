@@ -1,13 +1,13 @@
 use super::constants::COMPONENT_ID;
 use crate::core::database::{get_component_config, set_component_config};
+use poise::CreateReply;
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::{CollectComponentInteractions, CreateInteractionResponse};
-use poise::CreateReply;
 use std::sync::OnceLock;
 use std::time::Duration;
+use surrealdb::Surreal;
 use surrealdb::engine::local::Db;
 use surrealdb::types::SurrealValue;
-use surrealdb::Surreal;
 use tokio::sync::RwLock;
 
 // TODO: Component config macro

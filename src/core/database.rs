@@ -1,7 +1,7 @@
 use crate::component::{Component, InitializerFuture};
+use surrealdb::Surreal;
 use surrealdb::engine::local::Db;
 use surrealdb::types::{RecordId, SurrealValue};
-use surrealdb::Surreal;
 
 const COMPONENT_DATA_TABLE: &str = "component_data";
 

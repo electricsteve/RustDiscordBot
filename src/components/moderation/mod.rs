@@ -1,12 +1,17 @@
+mod commands;
+mod constants;
+
 use crate::component::Component;
 use poise::serenity_prelude as serenity;
 use serenity::all::FullEvent;
 use std::sync::Arc;
 
+use constants::COMPONENT_ID;
+
 pub fn component() -> Box<Component> {
     Box::new(Component {
-        id: "moderation".to_string(),
-        commands: vec![],
+        id: COMPONENT_ID.to_string(),
+        commands: vec![commands::moderation],
         event_handler: Arc::new(Handler),
         initializer: None,
     })

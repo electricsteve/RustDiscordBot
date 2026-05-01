@@ -5,7 +5,7 @@ pub mod events;
 use crate::core::database::{ComponentData, Enabled};
 use crate::types::ErrorType::{IllegalArgument, NotFound};
 use crate::{Error, GlobalData};
-use poise::{BoxFuture, Command};
+use poise::{BoxFuture, Command, Context};
 
 pub fn commands() -> Vec<Command<GlobalData, Error>> {
     vec![commands::register_commands(), commands::toggle_component()]
@@ -82,30 +82,33 @@ impl GlobalData {
 }
 
 /// Check if a command is allowed to run
-pub fn command_check(
-    ctx: poise::Context<'_, GlobalData, Error>,
-) -> BoxFuture<'_, Result<bool, Error>> {
+pub fn command_check(ctx: Context<'_, GlobalData, Error>) -> BoxFuture<'_, Result<bool, Error>> {
     Box::pin(async move {
-        let component_id = match &ctx.command().custom_data.downcast_ref::<CommandData>() {
-            Some(command_data) => &command_data.component_id,
-            None => {
-                // TODO: add tracing
-                // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/7
-                // Also add some nice logging for when components load, etc.
-                // tracing::warn!("Command custom data is not of type CommandData");
-                ctx.say("An error occurred while checking command component!").await?;
-                return Ok(true); // Currently runs if it can't get the component id, this may change
-            },
+        let Some(component_id) = get_context_component(&ctx) else {
+            // TODO: add tracing
+            // Issue URL: https://github.com/electricsteve/RustDiscordBot/issues/7
+            // Also add some nice logging for when components load, etc.
+            // tracing::warn!("Command custom data is not of type CommandData");
+            ctx.say("An error occurred while checking command component!").await?;
+            return Ok(true); // Currently runs if it can't get the component id, this may change
         };
         if component_id == CORE_COMPONENT_ID {
             return Ok(true); // Always allow core component
         }
         let data = ctx.data();
-        if !data.is_component_enabled(component_id).await? {
+        if !data.is_component_enabled(&component_id).await? {
             ctx.say("This component is not enabled!").await?;
             Ok(false)
         } else {
             Ok(true)
         }
     })
+}
+
+pub fn get_context_component(ctx: &Context<GlobalData, Error>) -> Option<String> {
+    ctx.command()
+        .custom_data
+        .downcast_ref::<CommandData>()
+        .as_ref()
+        .map(|command_data| command_data.component_id.clone())
 }

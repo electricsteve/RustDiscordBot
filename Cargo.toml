@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bytes = "1.11.1"
+chrono = "0.4.44"
 poise = { git = "https://github.com/serenity-rs/poise.git", branch = "serenity-next" }
 surrealdb = { version = "3.0.5", features = ["kv-mem", "protocol-ws", "kv-surrealkv"] }
 tokio = { version = "1.50.0", features = ["macros", "rt-multi-thread"] }

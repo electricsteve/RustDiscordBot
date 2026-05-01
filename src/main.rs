@@ -6,10 +6,10 @@ pub mod init;
 pub mod types;
 pub mod utils;
 
-use poise::{serenity_prelude as serenity, Command, PrefixFrameworkOptions};
+use poise::{Command, PrefixFrameworkOptions, serenity_prelude as serenity};
 use std::sync::Arc;
-use surrealdb::engine::local::SurrealKv;
 use surrealdb::Surreal;
+use surrealdb::engine::local::SurrealKv;
 
 use crate::environment::Environment;
 pub use types::{Context, Error, ErrorType, GlobalData};
