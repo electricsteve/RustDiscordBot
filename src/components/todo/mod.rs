@@ -74,6 +74,7 @@ pub async fn add(ctx: Context<'_>, content: String) -> Result<(), Error> {
 }
 
 /// Remove an item from your todo list. BROKEN BECAUSE OF A SURREALDB BUG
+//Issue URL: https://github.com/electricsteve/Rustey/issues/22
 #[poise::command(prefix_command, slash_command)]
 pub async fn remove(ctx: Context<'_>, index: u32) -> Result<(), Error> {
     let user_id = ctx.author().id;
