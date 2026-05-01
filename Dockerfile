@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 ARG RUST_VERSION=1.95.0
-ARG APP_NAME=RustDiscordBot
+ARG APP_NAME=Rustey
 
 ################################################################################
 # Build stage: compile the Rust application in a Rust environment.
