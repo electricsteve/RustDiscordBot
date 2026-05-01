@@ -73,6 +73,7 @@ pub async fn add(ctx: Context<'_>, content: String) -> Result<(), Error> {
     Ok(())
 }
 
+/// Remove an item from your todo list. BROKEN BECAUSE OF A SURREALDB BUG
 #[poise::command(prefix_command, slash_command)]
 pub async fn remove(ctx: Context<'_>, index: u32) -> Result<(), Error> {
     let user_id = ctx.author().id;
@@ -87,7 +88,8 @@ pub async fn remove(ctx: Context<'_>, index: u32) -> Result<(), Error> {
         return Ok(());
     } else {
         let result = result.unwrap();
-        ctx.say(format!("Successfully removed `{result}` from your to-do list!")).await?;
+        // ctx.say(format!("Successfully removed `{result}` from your to-do list!")).await?;
+        ctx.say("THIS IS BROKEN! Yes ik nothing actually got removed from your todo, but this is because of a surrealdb bug that is supposed to have a fix merged the day after I ship 😭".to_string()).await?;
     }
     Ok(())
 }
