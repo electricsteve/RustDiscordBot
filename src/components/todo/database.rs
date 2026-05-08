@@ -1,8 +1,8 @@
 use crate::components::todo::database::TodoError::{EmptyList, InvalidIndex};
-use surrealdb::Surreal;
 use surrealdb::engine::local::Db;
 use surrealdb::opt::PatchOp;
 use surrealdb::types::SurrealValue;
+use surrealdb::Surreal;
 
 pub async fn migrate(db: &Surreal<Db>) -> Result<(), crate::Error> {
     db.query(
@@ -46,7 +46,7 @@ pub async fn remove_todo(
         .upsert(("todo", uid as i64))
         .patch(PatchOp::remove(format!("/list/{index}")))
         .await
-        .expect("Error removing to-do item"); // BROKEN BECAUSE OF BUG https://github.com/surrealdb/surrealdb/issues/7166
+        .expect("Error removing to-do item");
     result
 }
 

@@ -88,9 +88,8 @@ pub async fn remove(ctx: Context<'_>, index: u32) -> Result<(), Error> {
         ctx.say(error_message).await?;
         return Ok(());
     } else {
-        let _result = result.unwrap();
-        // ctx.say(format!("Successfully removed `{result}` from your to-do list!")).await?;
-        ctx.say("THIS IS BROKEN! Yes ik nothing actually got removed from your todo, but this is because of a surrealdb bug that is supposed to have a fix merged the day after I ship 😭".to_string()).await?;
+        let result = result.unwrap();
+        ctx.say(format!("Successfully removed `{result}` from your to-do list!")).await?;
     }
     Ok(())
 }
