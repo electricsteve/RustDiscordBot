@@ -16,13 +16,13 @@ The bot currently has the following commands:
 - `/todo`
   - `add` add something to your todo list
   - `list` show your todo list
-  - `remove` remove something from your todo list (BROKEN RN BECAUSE THERE HASN'T BEEN A SURREALDB RELEASE)
+  - `remove` remove something from your todo list
 - `/toggle_component` turn individual components on/off (owner only)
 - `!register_commands` register the commands with discord. Only required one time. (owner only)
 
 ## Docker
 
-I haven't published a docker image yet, sorry. You can build your own using the provided `Dockerfile`.
+Use the `electric8steve/rustey` image on Docker Hub to run the bot in a container. You can set the same environment variables as described below when running the container.
 
 ## Prerequisites
 
