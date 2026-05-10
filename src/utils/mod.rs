@@ -1,4 +1,5 @@
 pub mod bot_info;
+pub mod config;
 pub mod embeds;
 pub mod messages;
 
